@@ -155,7 +155,7 @@
 
         .board { display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 950px; perspective: 1000px; position: relative; }
 
-        .card-container { position: relative; display: flex; flex-direction: row; align-items: flex-start; background: rgba(0, 0, 0, 0.3); padding: 30px; border-radius: 5px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); gap: 35px; color: var(--text-gray); border: 1px solid rgba(212, 172, 13, 0.6); margin: 0 auto; width: 90%; min-height: 400px; opacity: 0; transition: opacity 0.5s ease; }
+        .card-container { position: relative; display: flex; flex-direction: column; align-items: flex-start; background: rgba(0, 0, 0, 0.3); padding: 30px; border-radius: 5px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); gap: 35px; color: var(--text-gray); border: 1px solid rgba(212, 172, 13, 0.6); margin: 0 auto; width: 90%; min-height: 400px; opacity: 0; transition: opacity 0.5s ease; }
         .card-container.visible { opacity: 1; }
 
         .card-container.focus-card { border: 2px solid var(--gold); animation: focusPulse 3s infinite ease-in-out; z-index: 10; }
@@ -192,7 +192,7 @@
 
         .key-label { font-family: 'Cinzel', serif; font-size: 0.36em; color: var(--gold); border: 1px solid var(--gold); padding: 1px 6px; letter-spacing: 2px; text-shadow: 0 0 5px var(--gold); border-radius: 2px; font-weight: bold; }
 
-        .meaning-content { flex-grow: 1; display: flex; flex-direction: column; padding-top: 10px; z-index: 1; opacity: 0; transform: translateX(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .meaning-content { flex-grow: 1; display: flex; flex-direction: column; padding-top: 10px; z-index: 1; opacity: 0; /*transform: translateX(20px);*/ transition: opacity 0.6s ease, transform 0.6s ease; }
         .flipped .meaning-content { opacity: 1; transform: translateX(0); transition: opacity 0.8s ease 0.7s, transform 0.8s ease 0.7s; }
 
         .meaning-desc { font-size: 1.1em; line-height: 1.8; margin-bottom: 20px; color: #ddd; background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 8px; border-left: 5px solid var(--dark-gold); }
