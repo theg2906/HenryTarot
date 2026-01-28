@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無視論塔羅占卜</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #f1c40f;
+            --dark-gold: #d4ac0d;
+            --text-gray: #eee;
+            --font-title: 'Cinzel', 'Noto Serif TC', serif;
+            --font-body: 'Noto Serif TC', serif;
+            --nav-size: 50px;
+            --btn-size: 65px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: #1a0a1a;
+            background-image: url("bg_cloth.png");
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--gold); 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 40px;
+            border-radius: 50px;
+            border: 2px solid var(--dark-gold);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .header-container h1 {
+            font-family: var(--font-title);
+            margin: 0;
+            font-size: 2.2em;
+            color: var(--gold);
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
+            letter-spacing: 2px;
+            cursor: help;
+            position: relative;
+        }
+
+        /* 標題懸停提示框 */
+        .header-container h1::after {
+            content: "【無視論】由吳旻津老師創立，不分牌陣，綜合五張牌意與生剋解析。\A【重點牌判定】取「少數方」為重點，依序判定：1.正逆位 2.大小牌 3.數字/人物。";
+            position: absolute;
+            top: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--gold);
+            border: 1px solid var(--dark-gold);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: var(--font-body);
+            font-size: 0.4em;
+            line-height: 1.6;
+            width: 280px;
+            white-space: pre-wrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 3000;
+            text-align: left;
+            letter-spacing: 0;
+            text-shadow: none;
+        }
+        .header-container h1:hover::after {
+            opacity: 1;
+        }
+
+        .right-fixed-panel {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            z-index: 2000;
+        }
+
+        /* 抽牌按鈕：修正 3D 翻轉穩定性 */
+        .btn-wrapper {
+            perspective: 1000px;
+            width: var(--btn-size);
+            height: var(--btn-size);
+            position: relative;
+        }
+        #drawBtn {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            border: none;
+            background: none;
+            padding: 0;
+            cursor: pointer;
+            transform-origin: center center;
+        }
+        #drawBtn.shuffling { transform: rotateX(180deg); }
+        .btn-face {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: 0.3s;
+            font-family: var(--font-title);
+            border: 2px solid var(--dark-gold);
+            box-sizing: border-box;
+        }
+        .btn-front { background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%); color: #1a0a1a; }
+        .btn-back { background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%); color: white; transform: rotateX(180deg); }
+        
+        #drawBtn:hover .btn-front { transform: scale(1.1); box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
+        #drawBtn.shuffling:hover .btn-back { transform: rotateX(180deg) scale(1.1); box-shadow: 0 0 20px rgba(189, 195, 199, 0.4); }
+
+        .nav-container { display: flex; flex-direction: column; gap: 12px; opacity: 0; pointer-events: none; transition: opacity 0.8s ease; }
+        .nav-container.visible { opacity: 1; pointer-events: auto; }
+
+        .nav-dot { width: var(--nav-size); height: var(--nav-size); background: rgba(0, 0, 0, 0.7); border: 2px solid var(--dark-gold); border-radius: 50%; color: var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-decoration: none; }
+        .nav-dot:hover { background: var(--gold); color: #1a0a1a; transform: scale(1.1); box-shadow: 0 0 15px var(--gold); }
+        
+        .nav-dot.focus-dot { background: var(--gold); color: #1a0a1a; border-color: #fff; box-shadow: 0 0 15px var(--gold); }
+
+        .board { display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 950px; perspective: 1000px; position: relative; }
+
+        .card-container { position: relative; display: flex; flex-direction: row; align-items: flex-start; background: rgba(0, 0, 0, 0.3); padding: 30px; border-radius: 5px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); gap: 35px; color: var(--text-gray); border: 1px solid rgba(212, 172, 13, 0.6); margin: 0 auto; width: 90%; min-height: 400px; opacity: 0; transition: opacity 0.5s ease; }
+        .card-container.visible { opacity: 1; }
+
+        .card-container.focus-card { border: 2px solid var(--gold); animation: focusPulse 3s infinite ease-in-out; z-index: 10; }
+        .card-container.focus-card::before, .card-container.focus-card::after,
+        .focus-card .ornament-bottom::before, .focus-card .ornament-bottom::after { background-image: url("corner_pattern_focus.svg"); width: 80px; height: 80px; filter: drop-shadow(0 0 5px var(--gold)); }
+        
+        @keyframes focusPulse {
+            0% { box-shadow: 0 0 10px inset rgba(241, 196, 15, 0.3), 0 0 15px rgba(241, 196, 15, 0.2), 0 20px 50px rgba(0,0,0,0.8); }
+            50% { box-shadow: 0 0 25px inset rgba(241, 196, 15, 0.5), 0 0 35px rgba(241, 196, 15, 0.5), 0 20px 50px rgba(0,0,0,0.8); }
+            100% { box-shadow: 0 0 10px inset rgba(241, 196, 15, 0.3), 0 0 15px rgba(241, 196, 15, 0.2), 0 20px 50px rgba(0,0,0,0.8); }
+        }
+
+        .card-container::before, .card-container::after,
+        .ornament-bottom::before, .ornament-bottom::after { content: ""; position: absolute; width: 60px; height: 60px; background-image: url("corner_pattern.svg"); background-size: contain; background-repeat: no-repeat; pointer-events: none; }
+        .card-container::before { top: 0; left: 0; }
+        .card-container::after { top: 0; right: 0; transform: rotate(90deg); }
+        .ornament-bottom { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .ornament-bottom::before { bottom: 0; left: 0; transform: rotate(-90deg); }
+        .ornament-bottom::after { bottom: 0; right: 0; transform: rotate(180deg); }
+
+        .card-visual { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; z-index: 5; width: 180px; }
+        .flip-container { width: 180px; height: 310px; perspective: 1000px; }
+        .flipper { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+        .flipped .flipper { transform: rotateY(180deg); }
+        .front, .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 2px solid var(--dark-gold); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+        .front { transform: rotateY(180deg); background-color: #000; }
+        .back { background-color: #2c3e50; z-index: 2; }
+        .back img { width: 100%; height: 100%; object-fit: cover; }
+        .tarot-card { width: 100%; height: 100%; object-fit: cover; }
+        .reversed { transform: rotate(180deg); }
+
+        .card-name { margin-top: 15px; font-family: var(--font-title); font-size: 1.8em; font-weight: bold; color: var(--gold); text-shadow: 1px 1px 4px rgba(0,0,0,0.8); opacity: 0; transition: opacity 0.5s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+        .flipped .card-name { opacity: 1; transition: opacity 0.8s ease 0.6s; }
+
+        .key-label { font-family: 'Cinzel', serif; font-size: 0.36em; color: var(--gold); border: 1px solid var(--gold); padding: 1px 6px; letter-spacing: 2px; text-shadow: 0 0 5px var(--gold); border-radius: 2px; font-weight: bold; }
+
+        .meaning-content { flex-grow: 1; display: flex; flex-direction: column; padding-top: 10px; z-index: 1; opacity: 0; transform: translateX(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .flipped .meaning-content { opacity: 1; transform: translateX(0); transition: opacity 0.8s ease 0.7s, transform 0.8s ease 0.7s; }
+
+        .meaning-desc { font-size: 1.1em; line-height: 1.8; margin-bottom: 20px; color: #ddd; background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 8px; border-left: 5px solid var(--dark-gold); }
+        .focus-card .meaning-desc { border-left: 8px solid var(--gold); background: rgba(241, 196, 15, 0.1); }
+
+        .aspect-list { margin: 0; padding-left: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .aspect-list li { background: rgba(255, 255, 255, 0.1); padding: 12px 18px; border-radius: 10px; font-size: 0.95em; color: #eee; }
+        .aspect-list li b { color: var(--gold); margin-right: 8px; }
+
+        #initialDeckStack { position: relative; width: 180px; height: 310px; }
+        .deck-card-offset { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 8px; border: 2px solid var(--dark-gold); background-color: #2c3e50; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); overflow: hidden; transition: opacity 0.3s; }
+
+        .flying-card { position: fixed; width: 180px; height: 310px; z-index: 9999; pointer-events: none; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; border: 2px solid var(--dark-gold); box-shadow: 0 10px 30px rgba(0,0,0,0.8); background-color: #2c3e50; overflow: hidden; }
+        .flying-card img { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <div class="right-fixed-panel">
+        <div class="btn-wrapper">
+            <button id="drawBtn" onclick="handleBtnClick()">
+                <div class="btn-face btn-front">抽牌</div>
+                <div class="btn-face btn-back">洗牌</div>
+            </button>
+        </div>
+        <div class="nav-container" id="navDots">
+            <a href="#" class="nav-dot" onclick="scrollToCard(event, 0)">1</a>
+            <a href="#" class="nav-dot" onclick="scrollToCard(event, 1)">2</a>
+            <a href="#" class="nav-dot" onclick="scrollToCard(event, 2)">3</a>
+            <a href="#" class="nav-dot" onclick="scrollToCard(event, 3)">4</a>
+            <a href="#" class="nav-dot" onclick="scrollToCard(event, 4)">5</a>
+        </div>
+    </div>
+
+    <div class="header-container">
+        <h1>無視論塔羅占卜</h1>
+    </div>
+
+    <div class="board" id="cardBoard">
+        <div class="card-container visible" id="mainContainer">
+            <div class="ornament-bottom"></div>
+            <div class="card-visual" id="stackVisual">
+                <div id="initialDeckStack">
+                    <div class="deck-card-offset" style="transform: translate(8px, 8px) rotate(2deg); z-index: 1;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <div class="deck-card-offset" style="transform: translate(-5px, 6px) rotate(-3deg); z-index: 2;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <div class="deck-card-offset" style="transform: translate(4px, -4px) rotate(1deg); z-index: 3;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <div class="deck-card-offset" style="transform: translate(-2px, 2px) rotate(4deg); z-index: 4;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <div class="deck-card-offset" id="topCard" style="z-index: 5; transform: rotate(-1deg);"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="tarot_meanings.js"></script>
+    <script>
+        let isDrawing = false;
+        let hasDrawn = false;
+
+        function handleBtnClick() {
+            if (isDrawing) return;
+            if (!hasDrawn) initiateDraw();
+            else initiateShuffle();
+        }
+
+        async function initiateDraw() {
+            if (isDrawing) return;
+            isDrawing = true;
+            const board = document.getElementById('cardBoard');
+            const initialStack = document.getElementById('initialDeckStack');
+            const topCard = document.getElementById('topCard');
+            const deckRect = topCard.getBoundingClientRect();
+            if (initialStack) initialStack.style.visibility = 'hidden';
+            document.getElementById('navDots').classList.add('visible');
+            board.innerHTML = '';
+            
+            let deck = Array.from({length: 78}, (_, i) => i);
+            let selectedCards = [];
+            for(let i=0; i<5; i++) {
+                const randIndex = Math.floor(Math.random() * deck.length);
+                const cardIdx = deck.splice(randIndex, 1)[0];
+                const isReversed = Math.random() < 0.5;
+                selectedCards.push({ ...tarotData.find(d => d.id === cardIdx), isReversed });
+            }
+
+            const analyzeFocusCards = (cards) => {
+                const reversed = cards.filter(c => c.isReversed);
+                const upright = cards.filter(c => !c.isReversed);
+                if (reversed.length > 0 && upright.length > 0) {
+                    const focusReversed = reversed.length < upright.length;
+                    return cards.map(c => c.isReversed === focusReversed);
+                }
+                const majors = cards.filter(c => c.id <= 21);
+                const minors = cards.filter(c => c.id > 21);
+                if (majors.length > 0 && minors.length > 0) {
+                    const focusMajors = majors.length < minors.length;
+                    return cards.map(c => (c.id <= 21) === focusMajors);
+                }
+                if (minors.length === 5) {
+                    const isCourt = (id) => ((id - 22) % 14) >= 10;
+                    const courts = cards.filter(c => isCourt(c.id));
+                    const nums = cards.filter(c => !isCourt(c.id));
+                    if (courts.length > 0 && nums.length > 0) {
+                        const focusCourts = courts.length < nums.length;
+                        return cards.map(c => isCourt(c.id) === focusCourts);
+                    }
+                }
+                return Array(5).fill(false);
+            };
+
+            const focusMap = analyzeFocusCards(selectedCards);
+            const containers = [];
+            for(let i=0; i<5; i++) {
+                const container = document.createElement('div');
+                container.className = 'card-container';
+                if (focusMap[i]) container.classList.add('focus-card');
+                container.id = i === 0 ? 'mainContainer' : '';
+                container.innerHTML = '<div class="ornament-bottom"></div><div class="card-visual"></div>';
+                board.appendChild(container);
+                containers.push(container);
+                if (focusMap[i]) {
+                    const dot = document.querySelectorAll('.nav-dot')[i];
+                    if (dot) dot.classList.add('focus-dot');
+                }
+            }
+
+            for(let i=0; i<5; i++) {
+                const container = containers[i];
+                container.classList.add('visible');
+                const flyer = document.createElement('div');
+                flyer.className = 'flying-card';
+                flyer.style.top = (deckRect.top + window.scrollY) + 'px';
+                flyer.style.left = (deckRect.left + window.scrollX) + 'px';
+                flyer.innerHTML = '<img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;">';
+                document.body.appendChild(flyer);
+                const visualArea = container.querySelector('.card-visual');
+                const targetRect = visualArea.getBoundingClientRect();
+                setTimeout(() => {
+                    flyer.style.top = (targetRect.top + window.scrollY) + 'px';
+                    flyer.style.left = (targetRect.left + 80 + window.scrollX) + 'px';
+                    setTimeout(() => {
+                        flyer.style.left = (targetRect.left + window.scrollX) + 'px';
+                        setTimeout(() => {
+                            const card = selectedCards[i];
+                            const isFocus = focusMap[i];
+                            const visual = container.querySelector('.card-visual');
+                            visual.innerHTML = `<div class="flip-container"><div class="flipper"><div class="back"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="front"><img src="tarot_cards/A${card.id}.jpg" class="tarot-card ${card.isReversed ? 'reversed' : ''}"></div></div></div><div class="card-name">${card.name}${card.isReversed ? ' 逆位' : ' 正位'}${isFocus ? '<span class="key-label">重點牌</span>' : ''}</div>`;
+                            const meaning = card.isReversed ? card.rev : card.up;
+                            const content = document.createElement('div');
+                            content.className = 'meaning-content';
+                            content.innerHTML = `<div class="meaning-desc">${meaning.desc}</div><ul class="aspect-list"><li><b>愛情：</b>${meaning.love}</li><li><b>財富：</b>${meaning.wealth}</li><li><b>工作：</b>${meaning.work}</li><li><b>外表：</b>${meaning.appearance}</li><li><b>健康：</b>${meaning.health}</li></ul>`;
+                            container.appendChild(content);
+                            flyer.remove();
+                            container.offsetHeight; 
+                            container.classList.add('flipped');
+                            if (i === 4) {
+                                setTimeout(() => {
+                                    document.getElementById('drawBtn').classList.add('shuffling');
+                                    isDrawing = false;
+                                    hasDrawn = true;
+                                }, 1200);
+                            }
+                        }, 850);
+                    }, 850);
+                }, 10);
+                await new Promise(r => setTimeout(r, 450));
+            }
+        }
+
+        function scrollToCard(event, index) {
+            event.preventDefault();
+            const containers = document.querySelectorAll('.card-container');
+            if (containers[index]) containers[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        async function initiateShuffle() {
+            isDrawing = true;
+            // 洗牌開始時自動平滑捲動回頂端
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const drawBtn = document.getElementById('drawBtn');
+            const navDots = document.getElementById('navDots');
+            const board = document.getElementById('cardBoard');
+            const containers = Array.from(board.querySelectorAll('.card-container'));
+            navDots.classList.remove('visible');
+            document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('focus-dot'));
+            containers.forEach(c => c.classList.remove('flipped'));
+            await new Promise(r => setTimeout(r, 700));
+            const mainContainer = document.getElementById('mainContainer');
+            const mainVisual = mainContainer.querySelector('.card-visual');
+            const targetRect = mainVisual.getBoundingClientRect();
+            const finalOffsets = [{x: 8, y: 8, r: 2}, {x: -5, y: 6, r: -3}, {x: 4, y: -4, r: 1}, {x: -2, y: 2, r: 4}, {x: 0, y: 0, r: -1}];
+            const flyers = [];
+            for (let i = 0; i < containers.length; i++) {
+                const c = containers[i];
+                const visual = c.querySelector('.card-visual');
+                const currentRect = visual.getBoundingClientRect();
+                if (i > 0) {
+                    c.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    c.style.opacity = '0';
+                    c.style.transform = 'translateY(-20px)';
+                }
+                visual.style.visibility = 'hidden';
+                const flyer = document.createElement('div');
+                flyer.className = 'flying-card';
+                flyer.style.top = (currentRect.top + window.scrollY) + 'px';
+                flyer.style.left = (currentRect.left + window.scrollX) + 'px';
+                flyer.innerHTML = '<img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;">';
+                document.body.appendChild(flyer);
+                flyers.push(flyer);
+                const offset = finalOffsets[i];
+                requestAnimationFrame(() => {
+                    flyer.style.top = (targetRect.top + window.scrollY + offset.y) + 'px';
+                    flyer.style.left = (targetRect.left + window.scrollX + offset.x) + 'px';
+                    flyer.style.transform = `rotate(${offset.r}deg)`;
+                });
+                await new Promise(r => setTimeout(r, 100));
+            }
+            await new Promise(r => setTimeout(r, 850));
+            board.innerHTML = `<div class="card-container visible" id="mainContainer"><div class="ornament-bottom"></div><div class="card-visual" id="stackVisual"><div id="initialDeckStack"><div class="deck-card-offset" style="transform: translate(8px, 8px) rotate(2deg); z-index: 1;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" style="transform: translate(-5px, 6px) rotate(-3deg); z-index: 2;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" style="transform: translate(4px, -4px) rotate(1deg); z-index: 3;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" style="transform: translate(-2px, 2px) rotate(4deg); z-index: 4;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" id="topCard" style="z-index: 5; transform: rotate(-1deg);"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div></div></div></div>`;
+            requestAnimationFrame(() => {
+                flyers.forEach(f => f.remove());
+                drawBtn.classList.remove('shuffling');
+                hasDrawn = false;
+                isDrawing = false;
+            });
+        }
+    </script>
+</body>
+</html>

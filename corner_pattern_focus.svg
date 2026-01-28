@@ -1,0 +1,25 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f1c40f;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#d4ac0d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b7950b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- 外圍主曲線 -->
+  <path d="M 10,190 Q 10,10 190,10" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round"/>
+  <!-- 內部雙層裝飾 -->
+  <path d="M 30,170 Q 30,30 170,30" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+  <path d="M 50,150 Q 50,50 150,50" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <!-- 角落核心：太陽與射線 -->
+  <circle cx="20" cy="20" r="12" fill="url(#goldGrad)" opacity="0.8"/>
+  <path d="M 20,40 L 20,60 M 40,20 L 60,20 M 35,35 L 50,50" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round"/>
+  <!-- 華麗螺旋漩渦 -->
+  <path d="M 15,90 Q 40,90 40,65 T 15,40" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 90,15 Q 90,40 65,40 T 40,15" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round"/>
+  <!-- 點綴星塵 -->
+  <circle cx="80" cy="35" r="3" fill="url(#goldGrad)"/>
+  <circle cx="35" cy="80" r="3" fill="url(#goldGrad)"/>
+  <circle cx="120" cy="15" r="2" fill="url(#goldGrad)"/>
+  <circle cx="15" cy="120" r="2" fill="url(#goldGrad)"/>
+</svg>

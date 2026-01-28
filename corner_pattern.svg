@@ -1,0 +1,16 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f1c40f;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#d4ac0d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b7950b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Ornate corner pattern design -->
+  <path d="M 10,190 Q 10,10 190,10" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 25,175 Q 25,25 175,25" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 15,15 L 60,60" fill="none" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="15" cy="15" r="8" fill="url(#goldGrad)"/>
+  <path d="M 40,15 Q 15,15 15,40" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 80,10 Q 30,30 10,80" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round"/>
+</svg>
