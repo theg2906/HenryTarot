@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>無視論塔羅占卜</title>
+    <!-- Open Graph / LINE / Facebook Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://theg2906.github.io/HenryTarot/">
+    <meta property="og:title" content="無視論塔羅占卜">
+    <meta property="og:description" content="不分牌陣，洞悉命運指引 from 吳旻津老師">
+    <meta property="og:image" content="https://theg2906.github.io/HenryTarot/og_share_800.jpg">
+    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
@@ -206,7 +213,6 @@
         .btn-front { background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%); color: #1a0a1a; }
         .btn-back { background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%); color: white; transform: rotateX(180deg); }
         
-        /* 按鈕忙碌時的內部旋轉點動畫 (Spinner) */
         @keyframes spinnerRotate {
             from { transform: translate(-50%, -50%) rotate(0deg); }
             to { transform: translate(-50%, -50%) rotate(360deg); }
@@ -272,7 +278,6 @@
         .nav-dot.focus-dot { background: var(--gold); color: #1a0a1a; border-color: #fff; box-shadow: 0 0 15px var(--gold); opacity: 0.75; }
         .nav-dot.focus-dot:hover { opacity: 1; }
 
-        /* 鎖定樣式 */
         .disabled {
             pointer-events: none !important;
             opacity: 0.3 !important;
@@ -406,12 +411,30 @@
     </div>
 
     <div class="header-container">
-        <h1>無視論塔羅占卜</h1>
+        <h1 onclick="handleTitleClick()">無視論塔羅占卜</h1>
     </div>
 
     <div id="instructionText" style="margin-bottom: 30px; color: var(--gold); font-size: 1.1em; letter-spacing: 2px; text-align: center; opacity: 0.8; font-family: var(--font-body);">
         ✦ 誠心默念問題三次後抽牌 ✦
     </div>
+
+    <!-- 手動選牌視窗 -->
+    <div id="manualModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; color:var(--gold); font-family:var(--font-body); overflow-y:auto; padding:40px 20px; box-sizing:border-box;">
+        <div style="max-width:600px; margin:0 auto;">
+            <h2 style="text-align:center; font-family:var(--font-title); border-bottom:2px solid var(--dark-gold); padding-bottom:10px;">手動擺牌</h2>
+            <div id="manualSelectors"></div>
+            <div style="display:flex; gap:20px; justify-content:center; margin-top:30px;">
+                <button onclick="closeManualModal()" style="background:#555; color:white; border:none; padding:10px 25px; border-radius:5px; cursor:pointer;">取消</button>
+                <button onclick="confirmManualDraw()" style="background:linear-gradient(135deg, var(--gold), var(--dark-gold)); color:#1a0a1a; border:none; padding:10px 40px; border-radius:5px; font-weight:bold; cursor:pointer;">擺牌</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .manual-row { background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(212,172,13,0.3); display:flex; align-items:center; gap:10px; }
+        .manual-row label { width:30px; font-weight:bold; color:var(--dark-gold); }
+        .manual-row select { background:#222; color:var(--gold); border:1px solid var(--dark-gold); padding:5px; border-radius:4px; flex-grow:1; }
+    </style>
 
     <div class="board" id="cardBoard">
         <div class="card-container active-board" id="mainContainer">
@@ -428,15 +451,111 @@
         </div>
     </div>
 
-    <script src="tarot_meanings.js"></script>
+    <!-- 依序載入各組塔羅資料 (修正相對路徑) -->
+    <script src="data/data_major.js"></script>
+    <script src="data/data_wands.js"></script>
+    <script src="data/data_cups.js"></script>
+    <script src="data/data_swords.js"></script>
+    <script src="data/data_pentacles.js"></script>
+
     <script>
+        // 確保資料按 ID 0-77 正確排序 (因為分段 concat 可能導致順序混亂)
+        if (window.tarotData) {
+            window.tarotData.sort((a, b) => a.id - b.id);
+        }
+
         let isDrawing = false;
         let hasDrawn = false;
         let lastSelectedCards = [];
-        let drawingWatchdog = null; // 監控計時器
+        let drawingWatchdog = null; 
+
+        // --- 手動模式邏輯 ---
+        let titleClicks = 0;
+        let titleClickTimer = null;
+        function handleTitleClick() {
+            titleClicks++;
+            clearTimeout(titleClickTimer);
+            titleClickTimer = setTimeout(() => { titleClicks = 0; }, 1000);
+            if (titleClicks === 3) {
+                if (isDrawing || hasDrawn) return;
+                openManualModal();
+            }
+        }
+
+        function openManualModal() {
+            const container = document.getElementById('manualSelectors');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 5; i++) {
+                const row = document.createElement('div');
+                row.className = 'manual-row';
+                row.innerHTML = `
+                    <label>${i + 1}</label>
+                    <select id="m-cat-${i}" onchange="updateCardList(${i})" style="width:100px; flex-grow:0; margin-right:5px;">
+                        <option value="大塔羅">大塔羅</option>
+                        <option value="權杖">權杖</option>
+                        <option value="聖杯">聖杯</option>
+                        <option value="寶劍">寶劍</option>
+                        <option value="錢幣">錢幣</option>
+                    </select>
+                    <select id="m-card-${i}"></select>
+                    <select id="m-rev-${i}" style="width:70px; flex-grow:0; margin-left:5px;">
+                        <option value="false">正</option>
+                        <option value="true">逆</option>
+                    </select>
+                `;
+                container.appendChild(row);
+                updateCardList(i); 
+            }
+            document.getElementById('manualModal').style.display = 'block';
+        }
+
+        function closeManualModal() {
+            document.getElementById('manualModal').style.display = 'none';
+            titleClicks = 0;
+        }
+
+        function updateCardList(rowIndex) {
+            const cat = document.getElementById(`m-cat-${rowIndex}`).value;
+            const cardSelect = document.getElementById(`m-card-${rowIndex}`);
+            cardSelect.innerHTML = '';
+            
+            const filtered = tarotData.filter(c => {
+                if (cat === '大塔羅') return c.id >= 56 && c.id <= 77;
+                if (cat === '權杖') return c.id >= 0 && c.id <= 13;
+                if (cat === '寶劍') return c.id >= 14 && c.id <= 27;
+                if (cat === '聖杯') return c.id >= 28 && c.id <= 41;
+                if (cat === '錢幣') return c.id >= 42 && c.id <= 55;
+                return false;
+            }).sort((a,b) => a.id - b.id);
+
+            filtered.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.innerText = `${c.id}. ${c.name}`;
+                cardSelect.appendChild(opt);
+            });
+        }
+
+        async function confirmManualDraw() {
+            const manualCards = [];
+            const selectedIds = new Set();
+            for (let i = 0; i < 5; i++) {
+                const id = parseInt(document.getElementById(`m-card-${i}`).value);
+                if (selectedIds.has(id)) {
+                    alert(`錯誤：第 ${i+1} 張牌重複了！請選擇不同的卡牌。`);
+                    return;
+                }
+                selectedIds.add(id);
+                const isReversed = document.getElementById(`m-rev-${i}`).value === 'true';
+                const cardData = tarotData.find(d => d.id === id);
+                manualCards.push({ ...cardData, isReversed });
+            }
+            closeManualModal();
+            initiateDraw(manualCards);
+        }
 
         function forceCleanup() {
-            console.log("執行系統清理與狀態重置...");
             if (drawingWatchdog) {
                 clearTimeout(drawingWatchdog);
                 drawingWatchdog = null;
@@ -457,9 +576,7 @@
                 snapBtn.classList.remove('processing');
                 snapBtn.classList.remove('disabled');
             }
-
             document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('disabled'));
-            console.log("清理完成。");
         }
 
         window.addEventListener('load', forceCleanup);
@@ -470,22 +587,21 @@
             else initiateShuffle();
         }
 
-        async function initiateDraw() {
+        async function initiateDraw(manualCards = null) {
             if (isDrawing) return;
             forceCleanup(); 
             isDrawing = true;
             document.getElementById('drawBtn').classList.add('busy');
             document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
             
-            // 啟動監控計時器：10秒後若還在忙碌，提示使用者
             drawingWatchdog = setTimeout(() => {
                 if (isDrawing) {
-                    alert("抽牌處理時間較長，若畫面持續卡住，請嘗試重新整理網頁。");
-                    forceCleanup(); // 嘗試恢復按鈕狀態
+                    alert("處理時間較長，請嘗試重新整理網頁。");
+                    forceCleanup();
                 }
             }, 10000);
 
-            // 鎖定導覽與截圖
             const snapBtn = document.getElementById('snapshotBtn');
             if (snapBtn) snapBtn.classList.add('disabled');
             document.querySelectorAll('.nav-dot').forEach(d => d.classList.add('disabled'));
@@ -493,11 +609,8 @@
             const board = document.getElementById('cardBoard');
             const initialStack = document.getElementById('initialDeckStack');
             const topCard = document.getElementById('topCard');
-            if (!topCard) {
-                isDrawing = false;
-                document.body.style.overflow = 'auto';
-                return;
-            }
+            if (!topCard) { forceCleanup(); return; }
+
             const deckRect = topCard.getBoundingClientRect();
             const deckScrollY = window.scrollY;
 
@@ -514,39 +627,51 @@
                 if(snapBtn) snapBtn.classList.add('visible');
             }, 600);
 
-            // 抽牌前先清空 board
             board.innerHTML = '';
             
-            let deck = Array.from({length: 78}, (_, i) => i);
-            lastSelectedCards = [];
-            for(let i=0; i<5; i++) {
-                const randIndex = Math.floor(Math.random() * deck.length);
-                const cardIdx = deck.splice(randIndex, 1)[0];
-                const isReversed = Math.random() < 0.5;
-                lastSelectedCards.push({ ...tarotData.find(d => d.id === cardIdx), isReversed });
+            if (manualCards) {
+                lastSelectedCards = manualCards;
+            } else {
+                let availableIds = tarotData.map(c => c.id);
+                lastSelectedCards = [];
+                for(let i=0; i<5; i++) {
+                    const randIndex = Math.floor(Math.random() * availableIds.length);
+                    const cardIdx = availableIds.splice(randIndex, 1)[0];
+                    const isReversed = Math.random() < 0.5;
+                    const cardData = tarotData.find(d => d.id === cardIdx);
+                    if (cardData) lastSelectedCards.push({ ...cardData, isReversed });
+                }
             }
 
             const analyzeFocusCards = (cards) => {
                 const reversed = cards.filter(c => c.isReversed);
                 const upright = cards.filter(c => !c.isReversed);
-                if (reversed.length > 0 && upright.length > 0) {
-                    const focusReversed = reversed.length < upright.length;
-                    return cards.map(c => c.isReversed === focusReversed);
+                if (reversed.length !== 0 && upright.length !== 0) {
+                    if (reversed.length !== upright.length) {
+                        const focusReversed = reversed.length < upright.length;
+                        return cards.map(c => c.isReversed === focusReversed);
+                    }
                 }
-                const majors = cards.filter(c => c.id <= 21);
-                const minors = cards.filter(c => c.id > 21);
+                const isMajor = (id) => id >= 56 && id <= 77;
+                const majors = cards.filter(c => isMajor(c.id));
+                const minors = cards.filter(c => !isMajor(c.id));
                 if (majors.length > 0 && minors.length > 0) {
                     const focusMajors = majors.length < minors.length;
-                    return cards.map(c => (c.id <= 21) === focusMajors);
+                    return cards.map(c => isMajor(c.id) === focusMajors);
                 }
-                if (minors.length === 5) {
-                    const isCourt = (id) => ((id - 22) % 14) >= 10;
-                    const courts = cards.filter(c => isCourt(c.id));
-                    const nums = cards.filter(c => !isCourt(c.id));
-                    if (courts.length > 0 && nums.length > 0) {
-                        const focusCourts = courts.length < nums.length;
-                        return cards.map(c => isCourt(c.id) === focusCourts);
-                    }
+                const isCourt = (id) => {
+                    if (isMajor(id)) return false; 
+                    const pos = id % 14;
+                    return pos >= 0 && pos <= 3; 
+                };
+                const courts = cards.filter(c => isCourt(c.id));
+                const nums = cards.filter(c => !isCourt(c.id) && !isMajor(c.id));
+                if (courts.length > 0 && nums.length > 0) {
+                    const focusCourts = courts.length < nums.length;
+                    return cards.map(c => isCourt(c.id) === focusCourts);
+                }
+                if (reversed.length === 0 || upright.length === 0) {
+                    if (majors.length === 5 || minors.length === 5) return Array(5).fill(false);
                 }
                 return Array(5).fill(false);
             };
@@ -556,17 +681,9 @@
             for(let i=0; i<5; i++) {
                 const container = document.createElement('div');
                 container.className = 'card-container';
-                if (focusMap[i]) {
-                    container.classList.add('focus-card');
-                } else {
-                    container.classList.add('pending-normal');
-                }
-                
-                container.id = i === 0 ? 'mainContainer' : '';
-                container.innerHTML = '<div class="ornament-bottom"></div><div class="card-visual" style="visibility:visible;"></div>';
-                
+                if (focusMap[i]) container.classList.add('focus-card');
+                else container.classList.add('pending-normal');
                 board.appendChild(container);
-
                 containers.push(container);
                 if (focusMap[i]) {
                     const dot = document.querySelectorAll('.nav-dot')[i];
@@ -578,19 +695,12 @@
             for(let i=0; i<5; i++) {
                 const container = containers[i];
                 const currentIdx = i;
+                setTimeout(() => { container.classList.add('active-board'); }, i * 400);
                 
-                setTimeout(() => {
-                    container.classList.add('active-board');
-                }, i * 400);
+                const visualArea = document.createElement('div');
+                visualArea.className = 'card-visual';
+                container.appendChild(visualArea);
 
-                const finalizeStyle = () => {
-                    if (container.classList.contains('pending-normal')) {
-                        container.classList.remove('pending-normal');
-                        container.classList.add('normal-card');
-                    }
-                };
-                
-                const visualArea = container.querySelector('.card-visual');
                 const flyer = document.createElement('div');
                 flyer.className = 'flying-card';
                 flyer.style.top = (deckRect.top + deckScrollY) + 'px';
@@ -599,349 +709,205 @@
                 document.body.appendChild(flyer);
                 
                 flyer.offsetHeight;
-
-                const updateTrajectory = () => {
-                    const targetRect = visualArea.getBoundingClientRect();
-                    flyer.style.top = (targetRect.top + window.scrollY) + 'px';
-                    flyer.style.left = (targetRect.left + window.scrollX) + 'px';
-                };
-                requestAnimationFrame(updateTrajectory);
+                const targetRect = visualArea.getBoundingClientRect();
+                flyer.style.top = (targetRect.top + window.scrollY) + 'px';
+                flyer.style.left = (targetRect.left + window.scrollX) + 'px';
                 
                 setTimeout(() => {
                     const card = lastSelectedCards[currentIdx];
-                    const isFocus = card.isFocus;
-                    visualArea.innerHTML = `<div class="flip-container"><div class="flipper"><div class="back"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="front"><img src="tarot_cards/A${card.id}.jpg" class="tarot-card ${card.isReversed ? 'reversed' : ''}"></div></div></div><div class="card-name"><div style="display:flex; flex-direction:column; align-items:center;"><span>${card.name}${card.isReversed ? ' 逆位' : ' 正位'}</span><span>${isFocus ? '<span class="key-label">重點牌</span>' : ''}</span></div></div>`;
+                    visualArea.innerHTML = `<div class="flip-container"><div class="flipper"><div class="back"><img src="tarot_cards/0_back.jpg"></div><div class="front"><img src="tarot_cards/A${card.id}.jpg" class="tarot-card ${card.isReversed ? 'reversed' : ''}"></div></div></div><div class="card-name"><span>${card.name}${card.isReversed ? ' 逆位' : ' 正位'}</span>${card.isFocus ? '<span class="key-label">重點牌</span>' : ''}</div>`;
                     const meaning = card.isReversed ? card.rev : card.up;
                     const content = document.createElement('div');
                     content.className = 'meaning-content';
                     content.innerHTML = `<div class="meaning-desc">${meaning.desc}</div><ul class="aspect-list"><li><b>愛情：</b>${meaning.love}</li><li><b>財富：</b>${meaning.wealth}</li><li><b>工作：</b>${meaning.work}</li><li><b>外表：</b>${meaning.appearance}</li><li><b>健康：</b>${meaning.health}</li></ul>`;
                     container.appendChild(content);
-                    
                     flyer.remove();
-                    container.offsetHeight; 
                     container.classList.add('flipped');
-                    finalizeStyle();
+                    if (container.classList.contains('pending-normal')) {
+                        container.classList.remove('pending-normal');
+                        container.classList.add('normal-card');
+                    }
                     if (currentIdx === 4) {
                         setTimeout(() => {
-                            const drawBtn = document.getElementById('drawBtn');
-                            drawBtn.classList.add('shuffling');
-                            drawBtn.classList.remove('busy'); // 確保抽牌完成後移除 Spinner
-                            
-                            // 解除鎖定
-                            const snapBtn = document.getElementById('snapshotBtn');
+                            document.getElementById('drawBtn').classList.add('shuffling');
+                            document.getElementById('drawBtn').classList.remove('busy');
                             if (snapBtn) snapBtn.classList.remove('disabled');
                             document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('disabled'));
-
                             isDrawing = false;
                             hasDrawn = true;
-                            document.body.style.overflow = 'auto';
+                            document.body.style.overflow = '';
+                            document.documentElement.style.overflow = '';
                         }, 300);
                     }
                 }, 800);
-                
                 await new Promise(r => setTimeout(r, 450));
             }
         }
 
         async function initiateShuffle() {
             if (isDrawing) return;
-            isDrawing = true;
             forceCleanup();
-            isDrawing = true; // forceCleanup 會關掉 isDrawing，這裡要再打開
+            isDrawing = true; 
             document.getElementById('drawBtn').classList.add('busy');
             document.body.style.overflow = 'hidden';
-
+            document.documentElement.style.overflow = 'hidden';
             window.scrollTo({ top: 0, behavior: 'smooth' });
             await new Promise(r => setTimeout(r, 400));
 
             const board = document.getElementById('cardBoard');
             const containers = Array.from(board.querySelectorAll('.card-container'));
-            
-            const snapBtn = document.getElementById('snapshotBtn');
-            if(snapBtn) snapBtn.classList.remove('visible');
-
+            if(document.getElementById('snapshotBtn')) document.getElementById('snapshotBtn').classList.remove('visible');
             document.querySelectorAll('.nav-dot').forEach(dot => {
                 dot.classList.remove('visible');
                 dot.classList.remove('focus-dot');
             });
 
-            // 1. 先翻轉回牌背
             containers.forEach(c => c.classList.remove('flipped'));
             await new Promise(r => setTimeout(r, 600));
 
-            // 2. 取得回收目標 (第一個外框的位置)
             const mainContainer = document.getElementById('mainContainer') || containers[0];
-            if (!mainContainer) {
-                isDrawing = false;
-                return;
-            }
-            const targetVisual = mainContainer.querySelector('.card-visual');
-            const targetRect = targetVisual.getBoundingClientRect();
+            if (!mainContainer) { isDrawing = false; return; }
+            const targetRect = mainContainer.querySelector('.card-visual').getBoundingClientRect();
             
-            // 3. 修正：洗牌時讓第一個外框漸變回重點框 (如果當下是普通框)
-            mainContainer.classList.remove('normal-card');
-            mainContainer.classList.add('active-board'); 
-
-            const finalOffsets = [{x: 8, y: 8, r: 2}, {x: -5, y: 6, r: -3}, {x: 4, y: -4, r: 1}, {x: -2, y: 2, r: 4}, {x: 0, y: 0, r: -1}];
-            
-            const flyers = [];
             for (let i = 0; i < containers.length; i++) {
                 const c = containers[i];
                 const visual = c.querySelector('.card-visual');
-                const currentRect = visual.getBoundingClientRect();
-                
-                // 4. 外框回收動畫：除了第一個之外，其餘外框向中心靠攏並淡出
+                const rect = visual.getBoundingClientRect();
                 if (i > 0) {
-                    c.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    c.style.transition = 'all 0.8s ease';
                     c.style.opacity = '0';
-                    c.style.transform = `translateY(${targetRect.top - currentRect.top}px) scale(0.8)`;
+                    c.style.transform = `translateY(${targetRect.top - rect.top}px) scale(0.8)`;
                 }
-
-                visual.style.visibility = 'hidden';
-                
                 const flyer = document.createElement('div');
                 flyer.className = 'flying-card';
-                flyer.style.top = (currentRect.top + window.scrollY) + 'px';
-                flyer.style.left = (currentRect.left + window.scrollX) + 'px';
-                flyer.innerHTML = '<img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;">';
+                flyer.style.top = (rect.top + window.scrollY) + 'px';
+                flyer.style.left = (rect.left + window.scrollX) + 'px';
+                flyer.innerHTML = '<img src="tarot_cards/0_back.jpg">';
                 document.body.appendChild(flyer);
-                flyers.push(flyer);
-
-                const offset = finalOffsets[i] || {x:0, y:0, r:0};
                 requestAnimationFrame(() => {
-                    flyer.style.top = (targetRect.top + window.scrollY + offset.y) + 'px';
-                    flyer.style.left = (targetRect.left + window.scrollX + offset.x) + 'px';
-                    flyer.style.transform = `rotate(${offset.r}deg)`;
+                    flyer.style.top = (targetRect.top + window.scrollY) + 'px';
+                    flyer.style.left = (targetRect.left + window.scrollX) + 'px';
                 });
                 await new Promise(r => setTimeout(r, 100));
             }
 
             await new Promise(r => setTimeout(r, 850));
-            
-            board.innerHTML = `<div class="card-container active-board" id="mainContainer"><div class="ornament-bottom"></div><div class="card-visual" id="stackVisual"><div id="initialDeckStack"><div class="deck-card-offset" style="transform: translate(8px, 8px) rotate(2deg); z-index: 1;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" style="transform: translate(-5px, 6px) rotate(-3deg); z-index: 2;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" style="transform: translate(4px, -4px) rotate(1deg); z-index: 3;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" style="transform: translate(-2px, 2px) rotate(4deg); z-index: 4;"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div><div class="deck-card-offset" id="topCard" style="z-index: 5; transform: rotate(-1deg);"><img src="tarot_cards/0_back.jpg" style="width:100%;height:100%;object-fit:cover;"></div></div></div></div>`;
-            
-            const drawBtn = document.getElementById('drawBtn');
-            drawBtn.classList.remove('busy');
-            drawBtn.classList.remove('shuffling');
-            
-            forceCleanup();
+            board.innerHTML = `<div class="card-container active-board" id="mainContainer"><div class="ornament-bottom"></div><div class="card-visual" id="stackVisual"><div id="initialDeckStack"><div class="deck-card-offset" style="transform: translate(8px, 8px) rotate(2deg); z-index: 1;"><img src="tarot_cards/0_back.jpg"></div><div class="deck-card-offset" style="transform: translate(-5px, 6px) rotate(-3deg); z-index: 2;"><img src="tarot_cards/0_back.jpg"></div><div class="deck-card-offset" style="transform: translate(4px, -4px) rotate(1deg); z-index: 3;"><img src="tarot_cards/0_back.jpg"></div><div class="deck-card-offset" style="transform: translate(-2px, 2px) rotate(4deg); z-index: 4;"><img src="tarot_cards/0_back.jpg"></div><div class="deck-card-offset" id="topCard" style="z-index: 5; transform: rotate(-1deg);"><img src="tarot_cards/0_back.jpg"></div></div></div></div>`;
+            document.getElementById('drawBtn').classList.remove('busy');
+            document.getElementById('drawBtn').classList.remove('shuffling');
             hasDrawn = false;
             isDrawing = false;
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+
+        function scrollToCard(e, index) {
+            e.preventDefault();
+            const cards = document.querySelectorAll('.card-container');
+            if (cards[index]) cards[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function takeSnapshot() {
             const btn = document.getElementById('snapshotBtn');
             if (!btn || btn.classList.contains('processing') || lastSelectedCards.length < 5) return;
-            
             btn.classList.add('processing');
-
             const snapshotData = {
-                date: new Date().toLocaleString('zh-TW', { 
-                    year: 'numeric', month: '2-digit', day: '2-digit', 
-                    hour: '2-digit', minute: '2-digit', hour12: false 
-                }).replace(/\//g, '年').replace(' ', '日 '),
                 cards: lastSelectedCards.map(c => ({
-                    name: c.name,
-                    isReversed: c.isReversed,
-                    isFocus: c.isFocus,
+                    name: c.name, isReversed: c.isReversed, isFocus: c.isFocus,
                     meaning: (c.isReversed ? c.rev.desc : c.up.desc)
                 }))
             };
-
             renderAndCapture(snapshotData);
         }
 
         async function renderAndCapture(data) {
-            console.log("開始記憶體渲染截圖 (專業華麗版)...");
-            if (typeof html2canvas === 'undefined') {
-                alert('系統資源載入中，請稍候再試。');
-                forceCleanup();
-                return;
-            }
-
-            // 1. 建立渲染容器 (固定 800x1400)
+            if (typeof html2canvas === 'undefined') { forceCleanup(); return; }
+            document.body.style.overflow = 'hidden';
             const renderTarget = document.createElement('div');
-            renderTarget.style.position = 'absolute';
-            renderTarget.style.left = '0';
-            renderTarget.style.top = '-10000px'; 
-            renderTarget.style.width = '800px';
-            renderTarget.style.height = '1400px';
-            renderTarget.style.background = '#0d020d'; 
-            renderTarget.style.color = '#f1c40f';
-            renderTarget.style.fontFamily = "'Noto Serif TC', serif";
-            renderTarget.style.display = 'flex';
-            renderTarget.style.flexDirection = 'column';
-            renderTarget.style.alignItems = 'center';
-            renderTarget.style.padding = '60px 0';
-            renderTarget.style.boxSizing = 'border-box';
-            renderTarget.style.zIndex = '-9999';
-            renderTarget.style.overflow = 'hidden';
+            renderTarget.style = "position:absolute; left:0; top:-10000px; width:800px; height:1400px; background:linear-gradient(45deg, #2D1259 0%, #050226 50%, #2D1259 100%); color:#f1c40f; font-family:'Noto Serif TC', serif; display:flex; flex-direction:column; align-items:center; padding:50px 0; box-sizing:border-box; z-index:-9999; overflow:hidden;";
 
-            // 標題
             const title = document.createElement('div');
-            title.style.fontSize = '52px';
-            title.style.letterSpacing = '12px';
-            title.style.fontWeight = 'bold';
-            title.style.marginBottom = '15px';
+            title.style = "font-size:56px; letter-spacing:12px; font-weight:bold; margin-bottom:5px; text-shadow:0 5px 15px rgba(0,0,0,0.9);";
             title.innerText = '無視論塔羅占卜';
             renderTarget.appendChild(title);
 
             const decLine = document.createElement('div');
-            decLine.style.width = '400px';
-            decLine.style.height = '3px';
-            decLine.style.background = 'linear-gradient(90deg, transparent, #f1c40f, transparent)';
-            decLine.style.marginBottom = '40px';
+            decLine.style = "width:420px; height:2px; background:linear-gradient(90deg, transparent, #f1c40f, transparent); margin-bottom:30px;";
             renderTarget.appendChild(decLine);
 
-            // 2. 卡牌區域 (精確座標排列，確保不擋日期)
             const cardArea = document.createElement('div');
-            cardArea.style.width = '100%';
-            cardArea.style.height = '1050px'; 
-            cardArea.style.position = 'relative';
+            cardArea.style = "width:100%; height:1150px; position:relative;";
             renderTarget.appendChild(cardArea);
 
-            data.cards.forEach((card, i) => {
+            const layoutTypes = ['f', 'g'];
+            const chosenLayout = layoutTypes[Math.floor(Math.random() * layoutTypes.length)];
+            let positions = [];
+            const W = 300; const H = 450; const CX = 400; 
+
+            switch(chosenLayout) {
+                case 'f': // 上3下2
+                    positions = [
+                        {x:CX-260, y:40}, {x:CX, y:40}, {x:CX+260, y:40},
+                        {x:CX-150, y:520}, {x:CX+150, y:520}
+                    ];
+                    break;
+                case 'g': // 上2下3
+                    positions = [
+                        {x:CX-150, y:40}, {x:CX+150, y:40},
+                        {x:CX-260, y:520}, {x:CX, y:520}, {x:CX+260, y:520}
+                    ];
+                    break;
+            }
+
+            const normalCards = []; const focusCards = [];
+            data.cards.forEach((c, idx) => {
+                const cardWithPos = { ...c, pos: positions[idx] };
+                if (c.isFocus) focusCards.push(cardWithPos); else normalCards.push(cardWithPos);
+            });
+            const allToRender = [...normalCards, ...focusCards];
+
+            allToRender.forEach((card) => {
                 const cardBox = document.createElement('div');
-                cardBox.style.width = '260px'; 
-                cardBox.style.height = '400px'; 
-                cardBox.style.position = 'absolute';
-                cardBox.style.padding = '45px 25px';
-                cardBox.style.boxSizing = 'border-box';
-                cardBox.style.borderRadius = '5px';
-                cardBox.style.display = 'flex';
-                cardBox.style.flexDirection = 'column';
-                cardBox.style.alignItems = 'center';
-                cardBox.style.justifyContent = 'flex-start';
-                cardBox.style.zIndex = 10 + i;
+                cardBox.style = `width:${W}px; height:${H}px; position:absolute; padding:40px 25px; box-sizing:border-box; border-radius:12px; display:flex; flex-direction:column; align-items:center; top:${card.pos.y}px; left:${card.pos.x}px; transform:translateX(-50%) rotate(${card.isFocus?(Math.random()*10-5):(Math.random()*30-15)}deg); z-index:${card.isFocus?1000:100}; background:${card.isFocus?'#4d3511':'#2c2f33'}; border:${card.isFocus?'4px solid #f1c40f':'2px solid #bdc3c7'}; box-shadow:0 0 ${card.isFocus?60:30}px rgba(${card.isFocus?'241,196,15,0.8':'255,255,255,0.15'});`;
                 
-                // 垂直分佈與旋轉
-                const topPos = i * 160; 
-                const translateX = (i % 2 === 0) ? '135px' : '-135px';
-                const rotate = (i % 2 === 0) ? '6deg' : '-6deg';
-                
-                cardBox.style.top = `${topPos}px`;
-                cardBox.style.left = '50%';
-                cardBox.style.transform = `translateX(calc(-50% + ${translateX})) rotate(${rotate})`;
-
-                // 顏色策略：重點牌奢華 (深紅/金)，一般牌樸素 (深灰藍/銀)
-                if (card.isFocus) {
-                    cardBox.style.background = 'linear-gradient(135deg, #2c0a0a 0%, #1a0505 100%)'; 
-                    cardBox.style.borderColor = '#f1c40f'; 
-                    cardBox.style.boxShadow = '0 0 35px rgba(241, 196, 15, 0.4), 0 10px 40px rgba(0,0,0,0.9)';
-                    cardBox.style.border = '3px solid #f1c40f';
-                } else {
-                    cardBox.style.background = '#242a2e'; 
-                    cardBox.style.borderColor = '#95a5a6'; 
-                    cardBox.style.boxShadow = '0 0 15px rgba(149, 165, 166, 0.2), 0 10px 30px rgba(0,0,0,0.8)';
-                    cardBox.style.border = '2px solid #95a5a6';
-                }
-
-                // 多層線條 (顏色隨牌種變化)
-                const innerLineColor = card.isFocus ? 'rgba(241, 196, 15, 0.4)' : 'rgba(149, 165, 166, 0.3)';
-                const innerLine = document.createElement('div');
-                innerLine.style = `position:absolute; top:8px; left:8px; right:8px; bottom:8px; border:1px solid ${innerLineColor}; border-radius:3px;`;
-                cardBox.appendChild(innerLine);
-
-                // 內容排版
-                const cardTitle = `${card.name}${card.isReversed ? '逆位' : '正位'}`;
-                const titleColor = card.isFocus ? '#f1c40f' : '#ecf0f1';
-                
-                cardBox.innerHTML += `
-                    <div style="width:100%; border-bottom: 2px double ${card.isFocus?'#f1c40f':'#95a5a6'}; padding-bottom:12px; margin-bottom:18px; text-align:center;">
-                        <div style="font-size: 28px; font-weight: bold; color: ${titleColor}; text-shadow: 2px 2px 4px #000;">
-                            ${cardTitle}
-                        </div>
-                    </div>
-                    ${card.isFocus ? `
-                        <div style="background: linear-gradient(135deg, #f1c40f, #d4ac0d); color: #1a0a1a; padding: 3px 15px; border-radius: 2px; font-size: 16px; font-weight: bold; letter-spacing: 4px; margin-bottom: 15px; box-shadow: 0 0 10px #f1c40f;">
-                            重點牌
-                        </div>
-                    ` : '<div style="height:35px;"></div>'}
-                    <div style="font-size: 18px; line-height: 1.7; color: #f0f0f0; text-align: justify; width: 100%; display: -webkit-box; -webkit-line-clamp: 10; -webkit-box-orient: vertical; overflow: hidden; padding: 0 5px;">
-                        ${card.meaning}
-                    </div>
-                `;
-
-                // 飾角顏色隨主題變化
-                const decoColor = card.isFocus ? '#f1c40f' : '#95a5a6';
-                const corners = ['top:15px;left:15px;border-top:3px solid;border-left:3px solid;', 'top:15px;right:15px;border-top:3px solid;border-right:3px solid;', 'bottom:15px;left:15px;border-bottom:3px solid;border-left:3px solid;', 'bottom:15px;right:15px;border-bottom:3px solid;border-right:3px solid;'];
-                corners.forEach(s => {
-                    const c = document.createElement('div');
-                    c.style = `position:absolute; width:22px; height:22px; ${s} border-color:${decoColor}; filter: drop-shadow(0 0 4px ${decoColor});`;
-                    cardBox.appendChild(c);
-                });
-
+                cardBox.innerHTML = `<div style="position:absolute; top:12px; left:12px; right:12px; bottom:12px; border:1px solid ${card.isFocus?'rgba(241,196,15,0.5)':'rgba(255,255,255,0.2)'}; border-radius:8px; pointer-events:none;"></div><div style="width:100%; border-bottom: 2px double ${card.isFocus?'#f1c40f':'#7f8c8d'}; padding-bottom:12px; margin-bottom:15px; text-align:center;"><div style="font-size:32px; font-weight:bold; color:${card.isFocus?'#f1c40f':'#ffffff'}; text-shadow:2px 2px 4px #000;">${card.name}${card.isReversed?'逆位':'正位'}</div></div>${card.isFocus?'<div style="background:#f1c40f; color:#1a0a1a; padding:2px 15px; border-radius:2px; font-size:18px; font-weight:bold; margin-bottom:12px; letter-spacing:4px; box-shadow:0 0 15px #f1c40f;">重點牌</div>':'<div style="height:35px;"></div>'}<div style="font-size:20px; line-height:1.6; color:#ffffff; text-align:justify; width:100%; font-weight:400; text-shadow:1px 1px 2px #000; overflow:hidden;">${card.meaning}</div>`;
                 cardArea.appendChild(cardBox);
             });
 
-            // 3. 底部資訊區 (精確定位)
             const footer = document.createElement('div');
-            footer.style.marginTop = 'auto';
-            footer.style.width = '100%';
-            footer.style.textAlign = 'center';
-            footer.style.padding = '50px 0';
-            footer.style.fontSize = '24px';
-            footer.style.letterSpacing = '3px';
-            footer.style.borderTop = '1px solid rgba(241, 196, 15, 0.3)';
-            footer.style.background = '#0d020d'; 
-            
+            footer.style = "margin-top:auto; width:100%; text-align:center; padding:45px 0; font-size:28px; color:rgba(241,196,15,0.9); border-top:1px solid rgba(241,196,15,0.3);";
             const now = new Date();
-            const dateStr = `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            footer.innerText = dateStr;
+            footer.innerText = `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             renderTarget.appendChild(footer);
 
             document.body.appendChild(renderTarget);
-
             try {
-                await new Promise(r => setTimeout(r, 250));
-                const canvas = await html2canvas(renderTarget, {
-                    backgroundColor: '#0d020d',
-                    scale: 2,
-                    logging: false,
-                    useCORS: true,
-                    width: 800,
-                    height: 1400
-                });
-                showPreview(canvas.toDataURL('image/png'));
-            } catch (err) {
-                console.error("渲染失敗:", err);
-                alert("截圖生成失敗。");
-            } finally {
-                if (document.body.contains(renderTarget)) document.body.removeChild(renderTarget);
-                forceCleanup();
-            }
+                await new Promise(r => setTimeout(r, 500));
+                const canvas = await html2canvas(renderTarget, { backgroundColor:null, scale:2, useCORS:true, width:800, height:1400 });
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+                const filename = `tarot_${timestamp}.jpg`;
+                showPreview(canvas.toDataURL('image/jpeg', 0.85), filename);
+            } catch (err) { alert("截圖失敗"); forceCleanup(); }
+            finally { if (document.body.contains(renderTarget)) document.body.removeChild(renderTarget); }
         }
 
-        function showPreview(src) {
-            // 雙重確認鎖定滾動
+        function showPreview(src, filename) {
             document.documentElement.style.overflow = 'hidden';
             document.body.style.overflow = 'hidden';
-
             const overlay = document.createElement('div');
-            overlay.className = 'snapshot-overlay';
-            overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:99999; padding:20px; box-sizing:border-box;';
-            overlay.onclick = () => {
-                overlay.remove();
-                document.documentElement.style.overflow = '';
-                document.body.style.overflow = ''; 
-            };
-
+            overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;";
             overlay.innerHTML = `
-                <div style="background: rgba(241, 196, 15, 0.1); border: 2px solid #f1c40f; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);">
-                    <div style="color:#f1c40f; font-size: 1.5em; font-weight: bold; margin-bottom: 5px;">✦ 占卜結果已生成 ✦</div>
-                    <div style="color:#fff; font-size: 1.1em; letter-spacing: 2px; font-weight: bold;">長按圖片儲存</div>
+                <div style="color:var(--gold); margin-bottom:15px; font-family:var(--font-title); font-size:1.2em; letter-spacing:2px;">✦ 長按圖片或點擊下方按鈕儲存 ✦</div>
+                <img src="${src}" style="max-width:100%; max-height:70vh; border:2px solid var(--gold); box-shadow:0 0 30px rgba(0,0,0,0.5); border-radius:5px;">
+                <div style="display:flex; gap:15px; margin-top:25px;">
+                    <a href="${src}" download="${filename}" style="text-decoration:none; background:var(--gold); color:#1a0a1a; padding:10px 30px; border-radius:5px; font-family:var(--font-body); font-weight:bold;">儲存圖片</a>
+                    <button onclick="this.parentElement.parentElement.remove(); document.body.style.overflow=''; document.documentElement.style.overflow='';" style="background:transparent; color:var(--gold); border:1px solid var(--gold); padding:10px 30px; cursor:pointer; font-family:var(--font-body); border-radius:5px;">關閉預覽</button>
                 </div>
-                <img src="${src}" style="max-width:95%; max-height:70vh; border-radius:10px; box-shadow:0 0 40px #000; border: 1px solid #333;" onclick="event.stopPropagation()">
-                <div style="color:#f1c40f; margin-top:25px; font-size:1.1em; background: rgba(0,0,0,0.6); padding: 10px 25px; border-radius: 30px; border: 1px solid #444; cursor: pointer;">✕ 點擊空白處關閉</div>
             `;
             document.body.appendChild(overlay);
-        }
-
-        function scrollToCard(event, index) {
-            event.preventDefault();
-            const containers = document.querySelectorAll('.card-container');
-            if (containers[index]) containers[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const btn = document.getElementById('snapshotBtn');
+            if(btn) btn.classList.remove('processing');
         }
     </script>
 </body>
