@@ -1,0 +1,27 @@
+// data_major.js - 大牌組 (22張) 托特版
+if (!window.tarotData) window.tarotData = [];
+
+window.tarotData = window.tarotData.concat([[
+    { "id": 56, "name": "魔術師", "up": { "desc": "創造, 意志, 技能", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "欺騙, 缺乏自信", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 57, "name": "女祭司", "up": { "desc": "直覺, 秘密, 智慧", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "隱藏, 表面, 無知", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 58, "name": "皇后", "up": { "desc": "豐饒, 創造力, 自然", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "停滯, 依賴, 不孕", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 59, "name": "皇帝", "up": { "desc": "權威, 結構, 領導", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "暴君, 失控, 僵化", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 60, "name": "教皇", "up": { "desc": "傳統, 教育, 信仰", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "反叛, 限制, 異端", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 61, "name": "戀人", "up": { "desc": "選擇, 連結, 和諧", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "衝突, 分離, 不和", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 62, "name": "戰車", "up": { "desc": "勝利, 決心, 自控", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "失敗, 失控, 缺乏方向", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 63, "name": "調整", "up": { "desc": "公平, 平衡, 真理", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "不公, 偏見, 失衡", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 64, "name": "隱士", "up": { "desc": "內省, 指引, 孤獨", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "孤立, 固執, 撤退", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 65, "name": "命運之輪", "up": { "desc": "轉變, 機會, 命運", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "壞運, 停滯, 逆境", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 66, "name": "欲望", "up": { "desc": "勇氣, 力量, 熱情", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "軟弱, 恐懼, 缺乏控制", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 67, "name": "吊人", "up": { "desc": "犧牲, 新視角, 暫停", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "僵持, 延遲, 自私", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 68, "name": "死神", "up": { "desc": "結束, 轉變, 更新", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "停滯, 抗拒改變", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 69, "name": "藝術", "up": { "desc": "平衡, 節制, 融合", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "失衡, 極端, 衝突", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 70, "name": "惡魔", "up": { "desc": "束縛, 誘惑, 陰影", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "解脫, 自由, 挑戰", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 71, "name": "高塔", "up": { "desc": "毀滅, 啟示, 突變", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "災難避免, 延遲改變", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 72, "name": "星星", "up": { "desc": "希望, 靈感, 治療", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "絕望, 不確定, 失望", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 73, "name": "月亮", "up": { "desc": "幻覺, 直覺, 潛意識", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "迷惑, 恐懼, 不清晰", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 74, "name": "太陽", "up": { "desc": "成功, 喜悅, 活力", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "暫時失敗, 模糊不清", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 75, "name": "永恆", "up": { "desc": "覺醒, 審判, 更新", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "內疚, 延遲, 猶豫", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 76, "name": "宇宙", "up": { "desc": "完成, 圓滿, 成功", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "未完成, 停滯, 障礙", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } },
+    { "id": 77, "name": "愚者", "up": { "desc": "新開始, 自由, 潛力", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" }, "rev": { "desc": "魯莽, 輕率, 冒險", "love": "", "wealth": "", "work": "", "appearance": "", "health": "" } }
+]]);
