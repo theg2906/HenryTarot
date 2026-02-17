@@ -27,7 +27,6 @@
             min-height: 100vh; margin: 0; padding: 20px; overflow-x: hidden;
         }
 
-        /* 固定背景：用 fixed 偽元素模擬，iOS 完全支援 */
         body::before {
             content: "";
             position: fixed;
@@ -39,7 +38,7 @@
         }
 
         .header-container {
-            display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 40px;
+            display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px;
             background: rgba(0, 0, 0, 0.8); padding: 10px 30px; border-radius: 50px;
             border: 2px solid var(--dark-gold); box-shadow: 0 0 30px rgba(0,0,0,0.8); z-index: 1000;
         }
@@ -47,6 +46,11 @@
             font-family: var(--font-title); margin: 0; font-size: 1.8em; color: var(--gold);
             text-shadow: 2px 2px 10px rgba(0,0,0,0.9); letter-spacing: 2px; cursor: help;
             position: relative; line-height: 1.2; white-space: nowrap;
+        }
+        .header-subtext {
+            font-size: 0.8em; color: var(--gold); letter-spacing: 3px;
+            white-space: nowrap; font-weight: normal; font-family: var(--font-body);
+            margin-bottom: 30px; text-align: center; width: 100%;
         }
         .header-container select {
             background-color: #000; color: var(--gold); border: none; font-family: var(--font-title);
@@ -94,7 +98,6 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             text-decoration: none; opacity: 0; transition: all 0.3s ease; font-family: var(--font-title);
         }
-        /* Sprint 3: 導航點彈性動畫 */
         .nav-dot.visible { 
             opacity: 0.4; 
             animation: dotBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -104,7 +107,6 @@
             transform: scale(1.1);
             box-shadow: 0 0 15px var(--gold);
         }
-        /* Sprint 3: 消失動畫 (往上收) */
         .nav-dot.out, #snapshotBtn.out {
             opacity: 0 !important;
             transform: translateY(-30px) scale(0.5) !important;
@@ -115,16 +117,13 @@
             to { opacity: 0.4; transform: scale(1) translateX(0); }
         }
 
-        /* Sprint 3: 收牌狀態 */
         .card-container.collecting {
             opacity: 0;
             transform: translateY(-200px) scale(0.5) rotate(10deg);
             filter: blur(5px);
             transition: all 0.6s cubic-bezier(0.4, 0, 1, 1);
         }
-        .nav-dot.visible:hover { opacity: 1; transform: scale(1.1); }
         .nav-dot.focus-dot { background: var(--gold); color: #000; box-shadow: 0 0 15px var(--gold); opacity: 0.6; }
-        .nav-dot.focus-dot:hover { opacity: 1; }
 
         #snapshotBtn {
             width: calc(var(--btn-size) * 2.4); height: calc(var(--btn-size) * 0.9);
@@ -147,22 +146,14 @@
             position: relative; background: rgba(0,0,0,0.3); padding: 25px 30px; border-radius: 5px;
             border: 1px solid rgba(212,172,13,0.4); margin: 0 auto; width: 90%;
             min-height: 400px; max-height: 400px; overflow: hidden;
-            /* Sprint 2: 初始狀態設為上方飛入位置 */
             opacity: 0; transform: translateY(-100px) scale(0.8); 
             transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
                         transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
                         max-height 1.2s cubic-bezier(0.16, 1, 0.3, 1),
                         box-shadow 0.6s ease;
         }
-        .card-container.active-board { 
-            opacity: 1; 
-            transform: translateY(0) scale(1); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        /* 翻牌時增加陰影深度，模擬離地感 */
-        .card-container.flipped {
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-        }
+        .card-container.active-board { opacity: 1; transform: translateY(0) scale(1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .card-container.flipped { box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
         .card-container.expanded { max-height: 1200px; opacity: 1; padding-bottom: 40px; }
         .card-container.focus-card { border: 2px solid var(--gold); box-shadow: 0 0 30px rgba(241, 196, 15, 0.2); }
 
@@ -172,9 +163,6 @@
         }
         .ornament-top::before { top: 0; left: 0; } .ornament-top::after { top: 0; right: 0; transform: rotate(90deg); }
         .ornament-bottom::before { bottom: 0; left: 0; transform: rotate(-90deg); } .ornament-bottom::after { bottom: 0; right: 0; transform: rotate(180deg); }
-        .focus-card .ornament-top::before, .focus-card .ornament-top::after, .focus-card .ornament-bottom::before, .focus-card .ornament-bottom::after {
-            background-image: url("corner_pattern_focus.svg"); width: 80px; height: 80px; filter: drop-shadow(0 0 5px var(--gold));
-        }
 
         .card-visual { display: flex; align-items: center; gap: 35px; width: 100%; position: relative; z-index: 5; }
         .flip-container { width: 180px; height: 310px; perspective: 1500px; -webkit-perspective: 1500px; flex-shrink: 0; }
@@ -202,6 +190,14 @@
         #initialDeckStack { position: relative; width: 180px; height: 310px; }
         .deck-card-offset { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 8px; border: 2px solid var(--dark-gold); background: #2c3e50; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
 
+        .card-container.deck-swapping {
+            opacity: 0;
+            transform: scale(0.8) rotate(-5deg);
+            filter: blur(10px);
+            transition: all 0.4s ease-in;
+        }
+
+        /* 擺牌模式樣式 */
         #manualModal .manual-row {
             display: flex; justify-content: space-between; align-items: center; gap: 15px;
             margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px 25px; border-radius: 10px; width: 100%; box-sizing: border-box;
@@ -213,6 +209,7 @@
             appearance: none; -webkit-appearance: none; text-align: center;
         }
         #manualModal select:disabled { background: #222 !important; color: #666 !important; border-color: #444 !important; }
+
     </style>
 </head>
 <body>
@@ -236,11 +233,13 @@
         </select>
         <span class="decoration-star">✦</span>
     </div>
+    <div class="header-subtext">默念問題三次後抽牌</div>
 
     <div class="board" id="cardBoard">
         <div class="card-container active-board focus-card" id="mainContainer"></div>
     </div>
 
+    <!-- 擺牌模式 Modal -->
     <div id="manualModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; padding:40px 20px; box-sizing:border-box; overflow-y:auto;">
         <div style="width:70%; max-width:850px; margin:0 auto; color:var(--gold); display:flex; flex-direction:column; align-items:center;">
             <h2 style="text-align:center; font-family:var(--font-title); font-size:2em; margin-bottom:30px;">手動擺牌</h2>
@@ -255,7 +254,7 @@
     <template id="cardTemplate">
         <div class="ornament-top"></div> <div class="ornament-bottom"></div>
         <div class="card-visual">
-            <div class="flip-container"><div class="flipper"><div class="back"><img src="tarot_cards/0_back.jpg"></div><div class="front"></div></div></div>
+            <div class="flip-container"><div class="flipper"><div class="back"></div><div class="front"></div></div></div>
             <div class="card-name"><span class="name-text"></span><span class="key-label" style="display:none;">重點牌</span></div>
         </div>
         <div class="meaning-content"><div class="meaning-desc"></div><ul class="aspect-list"><li><b>愛情：</b><span class="love-text"></span></li><li><b>財富：</b><span class="wealth-text"></span></li><li><b>工作：</b><span class="work-text"></span></li><li><b>外表：</b><span class="appearance-text"></span></li><li><b>健康：</b><span class="health-text"></span></li></ul></div>
@@ -276,8 +275,15 @@
         }
 
         function initStartStack() {
+            const board = document.getElementById('cardBoard');
             const main = document.getElementById('mainContainer');
-            main.innerHTML = `<div class="ornament-top"></div><div class="ornament-bottom"></div><div class="card-visual" id="stackVisual"><div id="initialDeckStack"><div class="deck-card-offset" style="transform: translate(8px, 8px) rotate(3deg);"></div><div class="deck-card-offset" style="transform: translate(-5px, 5px) rotate(-2deg);"></div><div class="deck-card-offset" id="topCard"><img src="tarot_cards/0_back.jpg" style="width:100%; height:100%; object-fit:cover;"></div></div></div>`;
+            const snapBtn = document.getElementById('snapshotBtn');
+            document.getElementById('navDots').innerHTML = '';
+            if (snapBtn) snapBtn.classList.remove('visible', 'out', 'processing');
+            Array.from(board.children).forEach(child => { if (child !== main) child.remove(); });
+            const type = document.getElementById('tarotType').value;
+            const backImg = (type === 'thoth') ? 'thoth_cards/0_back.png' : 'tarot_cards/0_back.jpg';
+            main.innerHTML = `<div class="ornament-top"></div><div class="ornament-bottom"></div><div class="card-visual" id="stackVisual"><div id="initialDeckStack"><div class="deck-card-offset" style="transform: translate(8px, 8px) rotate(3deg);"></div><div class="deck-card-offset" style="transform: translate(-5px, 5px) rotate(-2deg);"></div><div class="deck-card-offset" id="topCard"><img src="${backImg}" style="width:100%; height:100%; object-fit:cover;"></div></div></div>`;
             main.className = 'card-container active-board focus-card';
         }
 
@@ -288,11 +294,33 @@
         function handleBtnClick() { if (isDrawing) return; if (!hasDrawn) initiateDraw(); else initiateShuffle(); }
 
         const analyzeFocusCards = (cards, numCards) => {
-            const currentType = document.getElementById('tarotType').value; if (currentType === 'thoth') return cards.map(() => Math.random() < 0.5);
-            const reversed = cards.filter(c => c.isReversed); const upright = cards.filter(c => !c.isReversed);
-            if (reversed.length !== 0 && upright.length !== 0 && reversed.length !== upright.length) { const focusReversed = reversed.length < upright.length; return cards.map(c => c.isReversed === focusReversed); }
-            const isMajor = (id) => id >= 56 && id <= 77; const majors = cards.filter(c => isMajor(c.id)); const minors = cards.filter(c => !isMajor(c.id));
-            if (majors.length > 0 && minors.length > 0 && majors.length !== minors.length) { const focusMajors = majors.length < minors.length; return cards.map(c => isMajor(c.id) === focusMajors); }
+            const currentType = document.getElementById('tarotType').value;
+            if (currentType === 'thoth') return cards.map(() => Math.random() < 0.5);
+
+            // 偉特重點牌邏輯：取少數方為重點
+            const checkMinority = (list, filterFn) => {
+                const matched = list.filter(filterFn);
+                const unmatched = list.filter(c => !filterFn(c));
+                if (matched.length > 0 && unmatched.length > 0 && matched.length !== unmatched.length) {
+                    return matched.length < unmatched.length ? matched : unmatched;
+                }
+                return null;
+            };
+
+            // 1. 正逆位判斷
+            let minority = checkMinority(cards, c => !c.isReversed); // filterFn 是 "正位"
+            if (minority) return cards.map(c => minority.includes(c));
+
+            // 2. 大小牌判斷
+            const isMajor = (id) => id >= 56 && id <= 77;
+            minority = checkMinority(cards, c => isMajor(c.id));
+            if (minority) return cards.map(c => minority.includes(c));
+
+            // 3. 宮廷 vs 數字判斷
+            const isCourt = (id) => (id >= 0 && id <= 3) || (id >= 14 && id <= 17) || (id >= 28 && id <= 31) || (id >= 42 && id <= 45);
+            minority = checkMinority(cards, c => isCourt(c.id));
+            if (minority) return cards.map(c => minority.includes(c));
+
             return Array(numCards).fill(false);
         };
 
@@ -300,46 +328,40 @@
             if (isDrawing) return; isDrawing = true;
             const drawBtn = document.getElementById('drawBtn'); drawBtn.innerText = "抽牌中"; drawBtn.classList.add('busy');
             const numCardsToDraw = parseInt(document.getElementById('numCards').value); const currentType = document.getElementById('tarotType').value;
-
             if (manualCards) lastSelectedCards = manualCards;
             else { let availableIds = tarotData.map(c => c.id); lastSelectedCards = []; for(let i=0; i<numCardsToDraw; i++) { const randIndex = Math.floor(Math.random() * availableIds.length); const cardIdx = availableIds.splice(randIndex, 1)[0]; const isReversed = (currentType === 'thoth') ? false : (Math.random() < 0.5); const cardData = tarotData.find(d => d.id === cardIdx); lastSelectedCards.push({ ...cardData, isReversed }); } }
-
             const focusMap = analyzeFocusCards(lastSelectedCards, numCardsToDraw);
             const board = document.getElementById('cardBoard'); const mainContainer = document.getElementById('mainContainer'); const navDotsContainer = document.getElementById('navDots'); navDotsContainer.innerHTML = '';
-
             const containers = []; for(let i=0; i<numCardsToDraw; i++) { const container = (i === 0) ? mainContainer : document.createElement('div'); if (i > 0) { container.className = 'card-container'; board.appendChild(container); } lastSelectedCards[i].isFocus = focusMap[i]; container.classList.remove('focus-card', 'expanded', 'flipped'); if (focusMap[i]) container.classList.add('focus-card'); containers.push(container); const dot = document.createElement('a'); dot.className = 'nav-dot' + (focusMap[i] ? ' focus-dot' : ''); dot.id = `nav-dot-${i}`; dot.innerText = i + 1; dot.onclick = (e) => { e.preventDefault(); container.scrollIntoView({behavior:'smooth', block:'center'}); }; navDotsContainer.appendChild(dot); }
-
             const template = document.getElementById('cardTemplate'); 
-            
-            // Sprint 3 優化：預載所有圖片，確保節奏同步且快速
+            const prefix = (currentType === 'thoth') ? 'B' : 'A';
+            const folder = (currentType === 'thoth') ? 'thoth_cards' : 'tarot_cards';
+            const ext = (currentType === 'thoth') ? 'png' : 'jpg';
             const loadImages = lastSelectedCards.map(card => {
                 return new Promise((resolve) => {
                     const img = new Image();
-                    img.src = `tarot_cards/A${card.id}.jpg`;
+                    img.src = `${folder}/${prefix}${card.id}.${ext}`;
                     img.onload = () => resolve({ img, id: card.id });
                 });
             });
-
             const loadedAssets = await Promise.all(loadImages);
-
             for(let i=0; i<numCardsToDraw; i++) { 
                 const container = containers[i]; 
                 const card = lastSelectedCards[i]; 
                 container.innerHTML = ''; 
                 const cardFragment = document.importNode(template.content, true); 
-                
+                const backImgTag = document.createElement('img');
+                backImgTag.src = (currentType === 'thoth') ? 'thoth_cards/0_back.png' : 'tarot_cards/0_back.jpg';
+                backImgTag.style = "width:100%; height:100%; object-fit:cover;";
+                cardFragment.querySelector('.back').appendChild(backImgTag);
                 const asset = loadedAssets.find(a => a.id === card.id);
                 const frontImg = asset.img;
                 frontImg.className = `tarot-card ${card.isReversed ? 'reversed' : ''}`;
-                
                 cardFragment.querySelector('.front').appendChild(frontImg);
                 cardFragment.querySelector('.name-text').innerText = `${card.name}${currentType==='thoth'?'':(card.isReversed?' 逆位':' 正位')}`; 
-                
                 if (currentType !== 'thoth' && focusMap[i]) cardFragment.querySelector('.key-label').style.display = 'inline-block'; 
-                
                 const meaning = card.isReversed ? card.rev : card.up; 
                 cardFragment.querySelector('.meaning-desc').innerText = meaning.desc; 
-                
                 if (currentType === 'thoth') cardFragment.querySelector('.aspect-list').style.display = 'none'; 
                 else { 
                     cardFragment.querySelector('.love-text').innerText = meaning.love; 
@@ -348,30 +370,23 @@
                     cardFragment.querySelector('.appearance-text').innerText = meaning.appearance; 
                     cardFragment.querySelector('.health-text').innerText = meaning.health; 
                 } 
-                
                 container.appendChild(cardFragment); 
-
-                // 使用固定時序觸發，確保 1 -> 5 順序正確且節奏緊湊
                 setTimeout(() => { 
                     const dot = document.getElementById(`nav-dot-${i}`);
                     if (dot) dot.classList.add('visible');
                     container.classList.add('active-board'); 
-                    
                     setTimeout(() => {
                         container.classList.add('flipped'); 
                         setTimeout(() => container.classList.add('expanded'), 400); 
                     }, 300);
-                    
-                }, i * 250); // 縮短間隔至 250ms，提升流暢感
+                }, i * 250);
             }
-
             setTimeout(() => { 
                 isDrawing = false; 
                 hasDrawn = true; 
                 drawBtn.innerText = "洗牌"; 
                 drawBtn.classList.remove('busy'); 
                 drawBtn.classList.add('shuffling'); 
-                
                 setTimeout(() => {
                     document.getElementById('snapshotBtn').classList.add('visible');
                     document.getElementById('snapshotBtn').classList.remove('out');
@@ -380,42 +395,59 @@
         }
 
         async function initiateShuffle() {
-            if (isDrawing) return; isDrawing = true;
+            if (isDrawing) return;
+            isDrawing = true;
             const btn = document.getElementById('drawBtn'); btn.innerText = "洗牌中"; btn.classList.add('busy');
             const containers = document.querySelectorAll('.card-container'); 
             const navDots = Array.from(document.querySelectorAll('.nav-dot'));
             const snapBtn = document.getElementById('snapshotBtn');
-            
-            // 1. 截圖按鈕先收
-            snapBtn.classList.add('out');
-            snapBtn.classList.remove('visible');
-            
-            // 2. 導覽點倒序收回 (5 -> 1)
-            navDots.reverse().forEach((d, idx) => {
-                setTimeout(() => {
-                    d.classList.add('out');
-                    d.classList.remove('visible');
-                }, idx * 100);
-            });
+            try {
+                if(snapBtn) { snapBtn.classList.add('out'); snapBtn.classList.remove('visible'); }
+                navDots.reverse().forEach((d, idx) => { setTimeout(() => { d.classList.add('out'); d.classList.remove('visible'); }, idx * 100); });
+                await new Promise(r => setTimeout(r, 600));
+                const actions = Array.from(containers).map((c, idx) => {
+                    return new Promise(resolve => {
+                        c.classList.remove('expanded', 'flipped');
+                        setTimeout(() => { c.classList.add('collecting'); setTimeout(resolve, 700); }, idx * 50);
+                    });
+                });
+                await Promise.all(actions);
+                initStartStack();
+            } finally {
+                hasDrawn = false;
+                isDrawing = false;
+                btn.innerText = "抽牌";
+                btn.classList.remove('shuffling', 'busy');
+                window.scrollTo({top:0, behavior:'smooth'});
+            }
+        }
 
-            // 等待按鈕與導覽點收完
-            await new Promise(r => setTimeout(r, 600));
-
-            // 3. 執行牌卡收回動畫
-            containers.forEach((c, idx) => {
-                c.classList.remove('expanded', 'flipped');
-                setTimeout(() => {
-                    c.classList.add('collecting');
-                }, idx * 50);
-            });
-
-            await new Promise(r => setTimeout(r, 800)); 
-
-            document.getElementById('navDots').innerHTML = '';
-            containers.forEach((c, idx) => { if (idx === 0) initStartStack(); else c.remove(); });
-            hasDrawn = false; isDrawing = false; btn.innerText = "抽牌"; btn.classList.remove('shuffling', 'busy'); 
-            snapBtn.classList.remove('out'); 
-            window.scrollTo({top:0, behavior:'smooth'});
+        async function handleTypeChange() { 
+            if (isDrawing) return;
+            const shouldChange = hasDrawn ? confirm("切換牌組將清空結果，確定嗎？") : true;
+            if (!shouldChange) return;
+            isDrawing = true;
+            const btn = document.getElementById('drawBtn');
+            const main = document.getElementById('mainContainer');
+            btn.innerText = "換牌中";
+            btn.classList.add('busy');
+            try {
+                if (hasDrawn) {
+                    const containers = document.querySelectorAll('.card-container');
+                    containers.forEach(c => c.classList.remove('expanded', 'flipped'));
+                    await new Promise(r => setTimeout(r, 600));
+                }
+                main.classList.add('deck-swapping');
+                await new Promise(r => setTimeout(r, 400));
+                await loadTarotSet(document.getElementById('tarotType').value);
+                initStartStack();
+                main.classList.remove('deck-swapping');
+            } finally {
+                hasDrawn = false;
+                isDrawing = false;
+                btn.innerText = "抽牌";
+                btn.classList.remove('busy', 'shuffling');
+            }
         }
 
         function takeSnapshot() {
@@ -433,8 +465,6 @@
             const cardArea = document.createElement('div'); cardArea.style = "width:100%; flex-grow:1; position:relative; margin:20px 0;"; renderTarget.appendChild(cardArea);
             const num = data.cards.length; const CX = 400; 
             const cW = (num === 1 ? 540 : (num === 3 ? 360 : 300)); const cH = (num === 1 ? 810 : (num === 3 ? 540 : 450));
-            
-            // 完美同步 index_working.html 的座標計算
             let pos = [];
             if (num === 1) pos = [{x:CX, y:120}];
             else if (num === 3) {
@@ -444,19 +474,16 @@
                 const layouts = [[{x:CX-260, y:40}, {x:CX, y:40}, {x:CX+260, y:40}, {x:CX-150, y:520}, {x:CX+150, y:520}], [{x:CX-150, y:40}, {x:CX+150, y:40}, {x:CX-260, y:520}, {x:CX, y:520}, {x:CX+260, y:520}]];
                 pos = layouts[Math.floor(Math.random() * layouts.length)];
             }
-
             data.cards.forEach((card, idx) => {
                 const cardBox = document.createElement('div'); const isF = card.isFocus;
                 const rot = (num === 1 ? 0 : (isF ? (Math.random() * 10 - 5) : (Math.random() * 30 - 15)));
                 cardBox.style = `width:${cW}px; height:${cH}px; position:absolute; padding:35px 25px; box-sizing:border-box; border-radius:15px; display:flex; flex-direction:column; align-items:center; top:${pos[idx].y}px; left:${pos[idx].x}px; transform:translateX(-50%) rotate(${rot}deg); z-index:${isF?1000:100}; background:${isF?'rgba(77,53,17,0.95)':'rgba(44,47,51,0.9)'}; border:${isF?'3px solid #f1c40f':'1.5px solid #bdc3c7'}; box-shadow:0 15px 40px rgba(0,0,0,0.6);`;
-                
                 let nS, mS;
                 if (data.type === 'thoth') {
                     if (num === 1) { nS = 56; mS = 42; } else if (num === 3) { nS = 44; mS = 34; } else { nS = 40; mS = 30; }
                 } else {
-                    if (num === 1) { nS = 56; mS = 28; } else if (num === 3) { nS = 44; mS = 22; } else { nS = 40; mS = 20; }
+                    if (num === 1) { nS = 56; mS = 28; } else if (num === 3) { nS = 44; mS = 22; } else { nS = 34; mS = 20; }
                 }
-
                 const showFocusLabel = isF && data.type !== 'thoth';
                 cardBox.innerHTML = `<div style="width:100%; border-bottom:1px solid ${isF?'#f1c40f':'#7f8c8d'}; padding-bottom:15px; margin-bottom:20px; text-align:center;"><div style="font-size:${nS}px; font-weight:bold; color:${isF?'#f1c40f':'#ffffff'};">${card.name}</div></div>${showFocusLabel?'<div style="background:#f1c40f; color:#1a0a1a; padding:3px 18px; border-radius:4px; font-size:16px; font-weight:bold; margin-bottom:15px;">重點牌</div>':''}<div style="font-size:${mS}px; line-height:1.7; color:#eee; text-align:${data.type==='thoth'?'center':'justify'};">${data.type==='thoth'?card.meaning.replace(/, /g,',<br>'):card.meaning}</div>`;
                 cardArea.appendChild(cardBox);
@@ -467,17 +494,10 @@
             try { 
                 await new Promise(r => setTimeout(r, 600)); 
                 const canvas = await html2canvas(renderTarget, { backgroundColor: "#1a0a1a", scale: 2, width: 800 }); 
-                
-                // 格式化檔名: Tarot_Waite_YYYYMMDD_HHMM.jpg
                 const now = data.timestamp;
-                const dateStr = now.getFullYear() + 
-                                String(now.getMonth() + 1).padStart(2, '0') + 
-                                String(now.getDate()).padStart(2, '0') + "_" +
-                                String(now.getHours()).padStart(2, '0') + 
-                                String(now.getMinutes()).padStart(2, '0');
+                const dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + "_" + String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
                 const typeStr = data.type.charAt(0).toUpperCase() + data.type.slice(1);
                 const filename = `Tarot_${typeStr}_${dateStr}.jpg`;
-
                 showPreview(canvas.toDataURL('image/jpeg', 0.9), filename); 
             } catch (err) { alert("截圖失敗"); }
             finally { if (document.body.contains(renderTarget)) document.body.removeChild(renderTarget); clearTimeout(watchdog); btn.classList.remove('processing'); btn.innerText = "儲存截圖"; }
@@ -486,27 +506,6 @@
             const div = document.createElement('div'); div.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; backdrop-filter:blur(5px); color:var(--gold);";
             div.innerHTML = `<div style="margin-bottom:20px; font-size:1.2em;">✦ 手機長按圖片儲存，PC點擊下方按鈕 ✦</div><img src="${src}" style="max-width:95%; max-height:75vh; border:2px solid var(--gold); border-radius:10px;"><div style="display:flex; gap:20px; margin-top:30px;"><a href="${src}" download="${filename}" style="background:var(--gold); color:#000; padding:12px 40px; text-decoration:none; border-radius:30px; font-weight:bold;">儲存圖片</a><button onclick="this.parentElement.parentElement.remove()" style="background:transparent; color:var(--gold); border:1px solid var(--gold); padding:12px 40px; border-radius:30px; cursor:pointer;">關閉預覽</button></div>`;
             document.body.appendChild(div);
-        }
-        async function handleTypeChange() { 
-            if (isDrawing) return alert("操作中，請稍候。");
-            const btn = document.getElementById('drawBtn');
-            const shouldChange = hasDrawn ? confirm("切換牌組將清空結果，確定嗎？") : true;
-            if (!shouldChange) return;
-            
-            // 只設按鈕外觀，不設 isDrawing（讓 initiateShuffle 自己管理）
-            btn.innerText = "換牌中";
-            btn.classList.add('busy');
-            
-            try {
-                if (hasDrawn) await initiateShuffle();
-                await loadTarotSet(document.getElementById('tarotType').value);
-            } finally {
-                // 確保最終狀態正確（initiateShuffle 完成後 hasDrawn=false）
-                if (!hasDrawn) {
-                    btn.innerText = "抽牌";
-                    btn.classList.remove('busy');
-                }
-            }
         }
         let titleClicks = 0, titleTimer = null;
         function handleTitleClick() { titleClicks++; clearTimeout(titleTimer); titleTimer = setTimeout(() => titleClicks = 0, 1000); if (titleClicks === 3 && !isDrawing && !hasDrawn) openManualModal(); }
@@ -520,7 +519,21 @@
             tarotData.filter(c => { if (cat === '大塔羅') return c.id >= 56 && c.id <= 77; if (cat === '權杖') return c.id >= 0 && c.id <= 13; if (cat === '寶劍') return c.id >= 14 && c.id <= 27; if (cat === '聖杯') return c.id >= 28 && c.id <= 41; if (cat === '錢幣') return c.id >= 42 && c.id <= 55; }).forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.innerText = c.name; select.appendChild(opt); });
         }
         function closeManualModal() { document.getElementById('manualModal').style.display = 'none'; }
-        async function confirmManualDraw() { const cards = []; for (let i = 0; i < parseInt(document.getElementById('numCards').value); i++) { const id = parseInt(document.getElementById(`m-card-${i}`).value); cards.push({ ...tarotData.find(d => d.id === id), isReversed: document.getElementById(`m-rev-${i}`).value === 'true' }); } closeManualModal(); initiateDraw(cards); }
+        async function confirmManualDraw() { 
+            const cards = []; 
+            const selectedIds = new Set();
+            for (let i = 0; i < parseInt(document.getElementById('numCards').value); i++) { 
+                const id = parseInt(document.getElementById(`m-card-${i}`).value); 
+                if (selectedIds.has(id)) {
+                    alert("手動擺牌不能選擇重複的牌卡，請檢查！");
+                    return;
+                }
+                selectedIds.add(id);
+                cards.push({ ...tarotData.find(d => d.id === id), isReversed: document.getElementById(`m-rev-${i}`).value === 'true' }); 
+            } 
+            closeManualModal(); 
+            initiateDraw(cards); 
+        }
     </script>
 </body>
 </html>
